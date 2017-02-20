@@ -1,0 +1,62 @@
+#ifndef __A7_H
+#define __A7_H
+#include "sys.h"
+#include "usart_2.h"
+#include "usmat3.h"
+
+
+typedef struct
+{
+	vu16 USART2_RX_STA;			//接收到的数据状态//[15]:0,没有接收到数据;1,接收到了一批数据.//[14:0]:接收到的数据长度
+	u8 Error;								//操作A6是否出错。0:未出错 1:出错
+	u8 USART2_RX_BUF[USART2_MAX_RECV_LEN];//接收缓冲,最大USART2_MAX_RECV_LEN字节.
+	u8 USART2_TX_BUF[USART2_MAX_SEND_LEN];//发送缓冲,最大USART2_MAX_SEND_LEN字节	
+	u8 signalQuality;			//GSM信号质量
+	char revision[50];			//模块固件版本信息
+	char IMEI[16];				//模块IMEI号
+	char Operator[15];			//运营商
+}Data_Pack;
+
+
+//__packed typedef struct
+//{
+//	s32 bootTimes;					//开机次数
+//	s32 postErrorTimes;				//POST失败次数
+//	s32 A6RestartTimes;				//A6重启次数
+//	u32 CRCData;					//CRCData之前数据的CRC校验
+//	s32 isEffective;				//记录FLASH中的数据是否有效
+//}_sysData;
+
+//typedef union 
+//{
+//	u16 buf[sizeof(_sysData)/2];//读取或写入FLASH的数组
+//	_sysData data;	//自动将buf[]中的数据分离为需要的数据
+//}_sysData_Pack;
+
+extern char p1[500];
+extern char POSTDATA[1000];
+extern u32 failedTimes;     //传输错误次数
+extern Data_Pack u2_data_Pack;  //A7相关结构体
+extern u8 isSendDataError;  //发送错误标志位
+extern u8 isSendData;     //通信标志位
+extern u8 deviceState;    //A7工作状态标志
+
+extern void cleanReceiveData(void);    //清楚接收器
+extern char * my_strstr(char *searchStr);   //搜索字符串函数
+extern s8 sendAT(char *sendStr,char *searchStr,u32 outTime);//发送AT指令函数
+extern void checkRevision(void);//查询模块版本信息
+extern void getIMEI(void); //获取IMEI
+extern void A7_Init(void);   //初始化A7
+extern s8 Check_TCP(void);    //检查当前连接状态
+extern s8 GPRS_Connect(void);   //GPRS连接
+extern s8 TCP_Connect(void);   //TCP连接
+extern s8 HTTP_POST(void); //POST发送
+extern char *Analytica1Data_GET(void);//geT解析函数
+extern char * AnalyticalData(void);//解析函数
+extern void Restart_A7(void);   //硬件重启A7
+extern s8 extractParameter(char *sourceStr,char *searchStr,s32 *dataOne,s32 *dataTwo,s32 *dataThree);
+extern u8 charNum(char *p ,char Char);
+extern char * ReturnCommaPosition(char *p ,u8 num);
+extern s8 A7_GPRS_Test(void);  //检测GPRS连接状态
+extern void A7_GPS_Init(void);  //初始化A7
+#endif
