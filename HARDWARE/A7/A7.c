@@ -527,6 +527,7 @@ char * AnalyticalData(void)
                 {
                     retHead=retTail-i+1;
                     * retTail=0;
+					delay_ms(20);
                     LCD_SString(10,100,300,200,12,u2_data_Pack.USART2_RX_BUF);		//显示一个字符串,12/16字体
                     return retHead;
                 }
