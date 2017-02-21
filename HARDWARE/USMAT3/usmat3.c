@@ -11,7 +11,7 @@
 
 
 
-Time_Pack u2_time_Pack;		   //时间
+Time_Pack u3_time_Pack;		   //时间
 u8 USART3_RX_BUF[USART3_MAX_RECV_LEN];
 u16 receive_len=0;
 vu16 USART2_RX_STA=0;
@@ -101,12 +101,12 @@ void Receive_empty(void)
 void UTC_Localtime(void)
 {
     //UTC小时加8h转为北京时间
-    u2_time_Pack.hour+=8;
-    if(u2_time_Pack.hour>=24)  //超过了一天
+    u3_time_Pack.hour+=8;
+    if(u3_time_Pack.hour>=24)  //超过了一天
     {
-        u2_time_Pack.hour-=24;
-        u2_time_Pack.day+=1;  //天数加1
-        switch(u2_time_Pack.month)
+        u3_time_Pack.hour-=24;
+        u3_time_Pack.day+=1;  //天数加1
+        switch(u3_time_Pack.month)
         {
         case 1:     //大月
         case 3:
@@ -115,14 +115,14 @@ void UTC_Localtime(void)
         case 8:
         case 10:
         case 12:
-            if(u2_time_Pack.day>31)
+            if(u3_time_Pack.day>31)
             {
-                u2_time_Pack.day-=31;
-                u2_time_Pack.month+=1;     //月份加1
-                if(u2_time_Pack.month>12)
+                u3_time_Pack.day-=31;
+                u3_time_Pack.month+=1;     //月份加1
+                if(u3_time_Pack.month>12)
                 {
-                    u2_time_Pack.month-=12;
-                    u2_time_Pack.year+=1;
+                    u3_time_Pack.month-=12;
+                    u3_time_Pack.year+=1;
                 }
 
             }
@@ -131,39 +131,54 @@ void UTC_Localtime(void)
         case 6:
         case 9:
         case 11:
-            if(u2_time_Pack.day>30)
+            if(u3_time_Pack.day>30)
             {
-                u2_time_Pack.day-=30;
-                u2_time_Pack.month+=1;     //月份加1
-                if(u2_time_Pack.month>12)
+                u3_time_Pack.day-=30;
+                u3_time_Pack.month+=1;     //月份加1
+                if(u3_time_Pack.month>12)
                 {
-                    u2_time_Pack.month-=12;
-                    u2_time_Pack.year+=1;
+                    u3_time_Pack.month-=12;
+                    u3_time_Pack.year+=1;
                 }
 
             }
             break;
         case 2:
             //先判断平年还是闰年
-            if((u2_time_Pack.year%400==0)||(u2_time_Pack.year%4==0&&u2_time_Pack.year%100!=0)) //闰年
+            if((u3_time_Pack.year%400==0)||(u3_time_Pack.year%4==0&&u3_time_Pack.year%100!=0)) //闰年
             {
-                if(u2_time_Pack.day>29)
+                if(u3_time_Pack.day>29)
                 {
-                    u2_time_Pack.day-=29;
-                    u2_time_Pack.month+=1;
+                    u3_time_Pack.day-=29;
+                    u3_time_Pack.month+=1;
                 }
             }
             else   //平年
             {
-                if(u2_time_Pack.day>28)
+                if(u3_time_Pack.day>28)
                 {
-                    u2_time_Pack.day-=28;
-                    u2_time_Pack.month+=1;
+                    u3_time_Pack.day-=28;
+                    u3_time_Pack.month+=1;
                 }
             }
             break;
         }
     }
+
+    if(u3_time_Pack.year<2017||	(u3_time_Pack.month>12&&u3_time_Pack.month<1)||
+            (u3_time_Pack.day>31&&u3_time_Pack.day<1)||
+            u3_time_Pack.hour>24||
+            u3_time_Pack.minute>60||
+            u3_time_Pack.second>60)     //转化的时间出现错误
+    {
+        u3_time_Pack.year=0;
+        u3_time_Pack.month=0;
+        u3_time_Pack.day=0;
+        u3_time_Pack.hour=0;
+        u3_time_Pack.minute=0;
+        u3_time_Pack.second=0;
+    }
+
 }
 
 
@@ -267,30 +282,30 @@ void analysisGPS(void)
                 }
 
                 //091202日月年的格式 083559.00时分秒的格式   时间的提取
-                u2_time_Pack.year=2000+(UTCTime_year[4]-'0')*10+(UTCTime_year[5]-'0');   //年的提取
-                u2_time_Pack.month=(UTCTime_year[2]-'0')*10+UTCTime_year[3]-'0';         //月的提取
-                u2_time_Pack.day=(UTCTime_year[0]-'0')*10+UTCTime_year[1]-'0';           //日
-                u2_time_Pack.hour=(UTCTime[0]-'0')*10+UTCTime[1]-'0';                    //时
-                u2_time_Pack.minute=(UTCTime[2]-'0')*10+UTCTime[3]-'0';                  //分
-                u2_time_Pack.second=(UTCTime[4]-'0')*10+UTCTime[5]-'0';                  //秒
+                u3_time_Pack.year=2000+(UTCTime_year[4]-'0')*10+(UTCTime_year[5]-'0');   //年的提取
+                u3_time_Pack.month=(UTCTime_year[2]-'0')*10+UTCTime_year[3]-'0';         //月的提取
+                u3_time_Pack.day=(UTCTime_year[0]-'0')*10+UTCTime_year[1]-'0';           //日
+                u3_time_Pack.hour=(UTCTime[0]-'0')*10+UTCTime[1]-'0';                    //时
+                u3_time_Pack.minute=(UTCTime[2]-'0')*10+UTCTime[3]-'0';                  //分
+                u3_time_Pack.second=(UTCTime[4]-'0')*10+UTCTime[5]-'0';                  //秒
 
 //                printf("UTC时间:%04d年%02d月%02d日 %2d:%2d:%2d\r\n",         //UTC输出时间信息
-//                       u2_time_Pack.year,
-//                       u2_time_Pack.month,
-//                       u2_time_Pack.day,
-//                       u2_time_Pack.hour,
-//                       u2_time_Pack.minute,
-//                       u2_time_Pack.second);
+//                       u3_time_Pack.year,
+//                       u3_time_Pack.month,
+//                       u3_time_Pack.day,
+//                       u3_time_Pack.hour,
+//                       u3_time_Pack.minute,
+//                       u3_time_Pack.second);
 
                 UTC_Localtime();                  //UTC时间转本地时间
 
 //                printf("北京时间:%04d年%02d月%02d日 %2d:%2d:%2d\r\n",         //北京时间的输出
-//                       u2_time_Pack.year,
-//                       u2_time_Pack.month,
-//                       u2_time_Pack.day,
-//                       u2_time_Pack.hour,
-//                       u2_time_Pack.minute,
-//                       u2_time_Pack.second);
+//                       u3_time_Pack.year,
+//                       u3_time_Pack.month,
+//                       u3_time_Pack.day,
+//                       u3_time_Pack.hour,
+//                       u3_time_Pack.minute,
+//                       u3_time_Pack.second);
 
                 GPS_effective=1;                  //标记获取的GPS数据有效
             }
@@ -355,9 +370,9 @@ void GPS_Packed_Data(void)   //GPS数据打包上传
 
     if(count==0)   //1次接收
     {
-        sprintf(u2_time_Pack.Time_Old,"%04d-%02d-%02d %02d:%02d:%02d",             //2016-01-14 05:24:19 时间数据放入数组(历史时间)
-                u2_time_Pack.year,u2_time_Pack.month,u2_time_Pack.day,
-                u2_time_Pack.hour,u2_time_Pack.minute,u2_time_Pack.second);
+        sprintf(u3_time_Pack.Time_Old,"%04d-%02d-%02d %02d:%02d:%02d",             //2016-01-14 05:24:19 时间数据放入数组(历史时间)
+                u3_time_Pack.year,u3_time_Pack.month,u3_time_Pack.day,
+                u3_time_Pack.hour,u3_time_Pack.minute,u3_time_Pack.second);
         count++;
 
     }
@@ -365,30 +380,30 @@ void GPS_Packed_Data(void)   //GPS数据打包上传
     else   //2次接收
     {
 
-        sprintf(u2_time_Pack.Time,"%04d-%02d-%02d %02d:%02d:%02d",             //2016-01-14 05:24:19 时间数据放入数组(历史时间)
-                u2_time_Pack.year,u2_time_Pack.month,u2_time_Pack.day,
-                u2_time_Pack.hour,u2_time_Pack.minute,u2_time_Pack.second);
+        sprintf(u3_time_Pack.Time,"%04d-%02d-%02d %02d:%02d:%02d",             //2016-01-14 05:24:19 时间数据放入数组(历史时间)
+                u3_time_Pack.year,u3_time_Pack.month,u3_time_Pack.day,
+                u3_time_Pack.hour,u3_time_Pack.minute,u3_time_Pack.second);
         //GPS数据上传  (两次的GPS数据上传)
         Pack_length=sprintf(TEXT_Buffer,"Lo=%.6lf&La=%.6lf&Time=%s&Log=%s,%d,%d,%d,%d,sQ: %d&&Lo=%.6lf&La=%.6lf&Time=%s&Log=%s,%d,%d,%d,%d,sQ: %d",   //一次数据打包
-                   LonOld,
-                   LatOld,
-                   u2_time_Pack.Time_Old,
-                   GPSState,                         //以下数据用来FLASH数据测试所用 以后需改动
-                   sysData_Pack.data.bootTimes,      //正常开机次数
-                   sysData_Pack.data.submitInformationErrorTimes, //上传服务器器失败次数
-                   sysData_Pack.data.postErrorTimes,  //POST失败次数
-                   sysData_Pack.data.GPSErrorTimes,
-                   signalQuality,
-                   LonNow,
-                   LatNow,
-                   u2_time_Pack.Time,
-                   GPSState,
-                   sysData_Pack.data.bootTimes,      //正常开机次数
-                   sysData_Pack.data.submitInformationErrorTimes, //上传服务器器失败次数
-                   sysData_Pack.data.postErrorTimes,  //POST失败次数
-                   sysData_Pack.data.GPSErrorTimes,
-                   old_signalQuality
-                  );
+                            LonOld,
+                            LatOld,
+                            u3_time_Pack.Time_Old,
+                            GPSState,                         //以下数据用来FLASH数据测试所用 以后需改动
+                            sysData_Pack.data.bootTimes,      //正常开机次数
+                            sysData_Pack.data.submitInformationErrorTimes, //上传服务器器失败次数
+                            sysData_Pack.data.postErrorTimes,  //POST失败次数
+                            sysData_Pack.data.GPSErrorTimes,
+                            signalQuality,
+                            LonNow,
+                            LatNow,
+                            u3_time_Pack.Time,
+                            GPSState,
+                            sysData_Pack.data.bootTimes,      //正常开机次数
+                            sysData_Pack.data.submitInformationErrorTimes, //上传服务器器失败次数
+                            sysData_Pack.data.postErrorTimes,  //POST失败次数
+                            sysData_Pack.data.GPSErrorTimes,
+                            old_signalQuality
+                           );
 
         printf("打包数据上传大小%d\r\n",Pack_length);
 
@@ -427,25 +442,25 @@ void USART3_IRQHandler(void)
             {
 //                if(GPS_Switch==1)          //判断是否接收GPS数据
 //                {
-          
-                    string[stringNum] = (char *)USART3_RX_BUF + startNum;//储存字符串首地址
-                    USART3_RX_BUF[receive_len - 2] = (u8)'\0'; //添加字符串结束符
-                    if((string[stringNum][0] == '$')&&
-                            (string[stringNum][1] == 'G')&&
-                            (string[stringNum][2] == 'P')&&
-                            (string[stringNum][3] == 'R')&&
-                            (string[stringNum][4] == 'M')&&
-                            (string[stringNum][5] == 'C'))	      //判断是否接收到推荐GPS定位信息
-                    {
 
-                        GPRMC = string[stringNum];
-                        if(GPRMC != 0)
-                        {
-                            analysisGPS();//解析GPS数据
-                        }
+                string[stringNum] = (char *)USART3_RX_BUF + startNum;//储存字符串首地址
+                USART3_RX_BUF[receive_len - 2] = (u8)'\0'; //添加字符串结束符
+                if((string[stringNum][0] == '$')&&
+                        (string[stringNum][1] == 'G')&&
+                        (string[stringNum][2] == 'P')&&
+                        (string[stringNum][3] == 'R')&&
+                        (string[stringNum][4] == 'M')&&
+                        (string[stringNum][5] == 'C'))	      //判断是否接收到推荐GPS定位信息
+                {
+
+                    GPRMC = string[stringNum];
+                    if(GPRMC != 0)
+                    {
+                        analysisGPS();//解析GPS数据
                     }
-                    stringNum++;//字符串计数器加1        	//一次最多接收的字符串数量20
-             
+                }
+                stringNum++;//字符串计数器加1        	//一次最多接收的字符串数量20
+
 //                }
             }
             startNum = receive_len;

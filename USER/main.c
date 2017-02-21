@@ -50,6 +50,7 @@ int main(void)
     KEY_Init();               //按键初始化
     A7_Init();                //A7模块初始化
     USART3_Init(BaudRate_usart3);    //初始化串口3 用来接收GPS数据
+	
     while(1)
     {
         if(GPS_Upload==1)   //GPS数据打包标志

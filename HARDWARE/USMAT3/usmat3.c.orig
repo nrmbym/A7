@@ -32,9 +32,9 @@ u8 GPS_effective=0;                         //GPS数据是否有效位
 static u8 count=0;   //GPS接收次数
 char *GPSState="LAST GPS  K";
 _sysData_Pack sysData_Pack;	//保存在Flash中的相关数据的数据结构
-u8 sd=0;         //暂时用来计算长度
-double distance=0;   //两次定位的距离
-u8 YL=1;
+u8 Pack_length=0;         //两次数据打包长度
+double distance=0;        //两次定位的距离
+
 
 //初始化IO 串口3
 //pclk1:PCLK1时钟频率(Mhz)
@@ -164,6 +164,21 @@ void UTC_Localtime(void)
             break;
         }
     }
+		
+		if(u2_time_Pack.year<2017||	(u2_time_Pack.month>12&&u2_time_Pack.month<1)||
+			(u2_time_Pack.day>31&&u2_time_Pack.day<1)||
+		  u2_time_Pack.hour>24||
+		u2_time_Pack.minute>60||
+		u2_time_Pack.second>60)     //转化的时间出现错误
+		{
+			u2_time_Pack.year=0;
+			u2_time_Pack.month=0;
+			u2_time_Pack.day=0;
+			u2_time_Pack.hour=0;
+			u2_time_Pack.minute=0;
+			u2_time_Pack.second=0; 
+		}
+		
 }
 
 
@@ -241,8 +256,8 @@ void analysisGPS(void)
                     printf("超出了中国的范围");
                     return;
                 }
-                printf("真实GPS数据%f,%f\r\n",Latitude_Temp,Longitude_Temp);  //当前的GPS数据
-                printf("百度GPS数据%f,%f\r\n",Baidu_Latitude_Temp,Baidu_Longitude_Temp);
+//                printf("真实GPS数据%f,%f\r\n",Latitude_Temp,Longitude_Temp);  //当前的GPS数据
+//                printf("百度GPS数据%f,%f\r\n",Baidu_Latitude_Temp,Baidu_Longitude_Temp);
 
                 //10个GPS数据先填满一个数组，每来一个数据依次轮换
                 if(first_time++==0)    //是第一次
@@ -274,23 +289,23 @@ void analysisGPS(void)
                 u2_time_Pack.minute=(UTCTime[2]-'0')*10+UTCTime[3]-'0';                  //分
                 u2_time_Pack.second=(UTCTime[4]-'0')*10+UTCTime[5]-'0';                  //秒
 
-                printf("UTC时间:%04d年%02d月%02d日 %2d:%2d:%2d\r\n",         //UTC输出时间信息
-                       u2_time_Pack.year,
-                       u2_time_Pack.month,
-                       u2_time_Pack.day,
-                       u2_time_Pack.hour,
-                       u2_time_Pack.minute,
-                       u2_time_Pack.second);
+//                printf("UTC时间:%04d年%02d月%02d日 %2d:%2d:%2d\r\n",         //UTC输出时间信息
+//                       u2_time_Pack.year,
+//                       u2_time_Pack.month,
+//                       u2_time_Pack.day,
+//                       u2_time_Pack.hour,
+//                       u2_time_Pack.minute,
+//                       u2_time_Pack.second);
 
                 UTC_Localtime();                  //UTC时间转本地时间
 
-                printf("北京时间:%04d年%02d月%02d日 %2d:%2d:%2d\r\n",         //北京时间的输出
-                       u2_time_Pack.year,
-                       u2_time_Pack.month,
-                       u2_time_Pack.day,
-                       u2_time_Pack.hour,
-                       u2_time_Pack.minute,
-                       u2_time_Pack.second);
+//                printf("北京时间:%04d年%02d月%02d日 %2d:%2d:%2d\r\n",         //北京时间的输出
+//                       u2_time_Pack.year,
+//                       u2_time_Pack.month,
+//                       u2_time_Pack.day,
+//                       u2_time_Pack.hour,
+//                       u2_time_Pack.minute,
+//                       u2_time_Pack.second);
 
                 GPS_effective=1;                  //标记获取的GPS数据有效
             }
@@ -350,50 +365,50 @@ void getFilterLoc(double * Lat_filter,double * Lon_filter)     //获取的10个GPS数
 
 void GPS_Packed_Data(void)   //GPS数据打包上传
 {
-	
-				GPS_PACK=0;  //每一次都清零
 
-        if(count==0)   //1次接收
-        {
-            sprintf(u2_time_Pack.Time_Old,"%04d-%02d-%02d %02d:%02d:%02d",             //2016-01-14 05:24:19 时间数据放入数组(历史时间)
-                    u2_time_Pack.year,u2_time_Pack.month,u2_time_Pack.day,
-                    u2_time_Pack.hour,u2_time_Pack.minute,u2_time_Pack.second);
-            count++;
-     
-        }
+    GPS_PACK=0;  //每一次都清零
 
-        else   //2次接收
-        {
+    if(count==0)   //1次接收
+    {
+        sprintf(u2_time_Pack.Time_Old,"%04d-%02d-%02d %02d:%02d:%02d",             //2016-01-14 05:24:19 时间数据放入数组(历史时间)
+                u2_time_Pack.year,u2_time_Pack.month,u2_time_Pack.day,
+                u2_time_Pack.hour,u2_time_Pack.minute,u2_time_Pack.second);
+        count++;
 
-            sprintf(u2_time_Pack.Time,"%04d-%02d-%02d %02d:%02d:%02d",             //2016-01-14 05:24:19 时间数据放入数组(历史时间)
-                    u2_time_Pack.year,u2_time_Pack.month,u2_time_Pack.day,
-                    u2_time_Pack.hour,u2_time_Pack.minute,u2_time_Pack.second);
-            //GPS数据上传  (两次的GPS数据上传)
-            sd=sprintf(TEXT_Buffer,"Lo=%.6lf&La=%.6lf&Time=%s&Log=%s,%d,%d,%d,%d,sQ: %d&&Lo=%.6lf&La=%.6lf&Time=%s&Log=%s,%d,%d,%d,%d,sQ: %d",   //一次数据打包
-                       LonOld,
-                       LatOld,
-                       u2_time_Pack.Time_Old,
-                       GPSState,                         //以下数据用来FLASH数据测试所用 以后需改动
-                       sysData_Pack.data.bootTimes,      //正常开机次数
-                       sysData_Pack.data.submitInformationErrorTimes, //上传服务器器失败次数
-                       sysData_Pack.data.postErrorTimes,  //POST失败次数
-                       sysData_Pack.data.GPSErrorTimes,
-                       signalQuality,
-                       LonNow,
-                       LatNow,
-                       u2_time_Pack.Time,
-                       GPSState,
-                       sysData_Pack.data.bootTimes,      //正常开机次数
-                       sysData_Pack.data.submitInformationErrorTimes, //上传服务器器失败次数
-                       sysData_Pack.data.postErrorTimes,  //POST失败次数
-                       sysData_Pack.data.GPSErrorTimes,
-                       old_signalQuality
-                      );
+    }
 
-            printf("打包数据上传大小%d\r\n",sd);
-						
-						
-						
+    else   //2次接收
+    {
+
+        sprintf(u2_time_Pack.Time,"%04d-%02d-%02d %02d:%02d:%02d",             //2016-01-14 05:24:19 时间数据放入数组(历史时间)
+                u2_time_Pack.year,u2_time_Pack.month,u2_time_Pack.day,
+                u2_time_Pack.hour,u2_time_Pack.minute,u2_time_Pack.second);
+        //GPS数据上传  (两次的GPS数据上传)
+        Pack_length=sprintf(TEXT_Buffer,"Lo=%.6lf&La=%.6lf&Time=%s&Log=%s,%d,%d,%d,%d,sQ: %d&&Lo=%.6lf&La=%.6lf&Time=%s&Log=%s,%d,%d,%d,%d,sQ: %d",   //一次数据打包
+                   LonOld,
+                   LatOld,
+                   u2_time_Pack.Time_Old,
+                   GPSState,                         //以下数据用来FLASH数据测试所用 以后需改动
+                   sysData_Pack.data.bootTimes,      //正常开机次数
+                   sysData_Pack.data.submitInformationErrorTimes, //上传服务器器失败次数
+                   sysData_Pack.data.postErrorTimes,  //POST失败次数
+                   sysData_Pack.data.GPSErrorTimes,
+                   signalQuality,
+                   LonNow,
+                   LatNow,
+                   u2_time_Pack.Time,
+                   GPSState,
+                   sysData_Pack.data.bootTimes,      //正常开机次数
+                   sysData_Pack.data.submitInformationErrorTimes, //上传服务器器失败次数
+                   sysData_Pack.data.postErrorTimes,  //POST失败次数
+                   sysData_Pack.data.GPSErrorTimes,
+                   old_signalQuality
+                  );
+
+        printf("打包数据上传大小%d\r\n",Pack_length);
+
+
+
 //            //与上次上传的时间超过30s才上传
 //            //先读FLASH中是否有数据
 //            //有数据先上传FALSH中的数据    （上传GPS数据时，先关闭GPS）
@@ -403,12 +418,12 @@ void GPS_Packed_Data(void)   //GPS数据打包上传
 //            //存入数据到FLASH
 //            FLASH_GPS_Pack();    //未上传成功的打包数据存放到FLASH中
 
-						GPS_PACK=1;     //标记两次打包完成
-            count=0;
-					  
-						
-        }
-        GPS_Upload=0;   //打包上传标志位位清0
+        GPS_PACK=1;     //标记两次打包完成
+        count=0;
+
+
+    }
+    GPS_Upload=0;   //打包上传标志位位清0
 }
 
 
@@ -427,8 +442,7 @@ void USART3_IRQHandler(void)
             {
 //                if(GPS_Switch==1)          //判断是否接收GPS数据
 //                {
-				   if(YL==1)
-				   {
+          
                     string[stringNum] = (char *)USART3_RX_BUF + startNum;//储存字符串首地址
                     USART3_RX_BUF[receive_len - 2] = (u8)'\0'; //添加字符串结束符
                     if((string[stringNum][0] == '$')&&
@@ -446,7 +460,7 @@ void USART3_IRQHandler(void)
                         }
                     }
                     stringNum++;//字符串计数器加1        	//一次最多接收的字符串数量20
-				}
+             
 //                }
             }
             startNum = receive_len;

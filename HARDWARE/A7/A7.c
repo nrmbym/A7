@@ -726,7 +726,7 @@ void A7_SendPost()  //发送并校验
                     else
                         printf("发送失败\r\n");
                 }
-				failedTimes=0;
+				         failedTimes=0;
             }
         }
         else

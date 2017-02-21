@@ -184,6 +184,7 @@ void FLASH_GPS_Pack(u8 m)   //未上传成功的打包数据存放到FLASH中
     {
         STMFLASH_Write(FLASH_SAVE_GPS+1024*4+(m-24)*Pack_length,(u16*)TEXT_Buffer,sizeof(TEXT_Buffer)/2);
     }
+		
 		printf("未上传成功的GPS数据已保存FLASH\r\n\r\n");
     m++;
     if(m>=30)   //超过了最大的存储空间,从第一个开始重新存放

@@ -27,7 +27,6 @@ __packed typedef struct     //__packedÔÚÕâÀï±íÊ¾ 1¡¢²»»á²åÈëÌî³äÒÔ¶ÔÆëÑ¹Ëõ¶ÔÏó ²
     s32 GPSErrorTimes;				//ÒòÎªGPSÎ´¶¨Î»Ê±¼ä³¬Ê±Ôì³ÉµÄA7ÖØÆô´ÎÊı
     u32 CRCData;					    //CRCDataÖ®Ç°Êı¾İµÄCRCĞ£Ñé
     s32 isEffective;				  //¼ÇÂ¼FLASHÖĞµÄÊı¾İÊÇ·ñÓĞĞ§
-
 } _sysData;
 
 typedef union       //¹²ÓÃÌå,ÀïÃæ¹²ÓÃÒ»¶Î´æ´¢¿Õ¼ä  Ò»¸öbufÖĞ´æ´¢Á½¸ö×Ö½Ú Ã¿Á½¸öbuf´æ´¢Ò»¸öÊı¾İ
@@ -48,7 +47,7 @@ extern u32 startNum;        //¼ÇÂ¼µ±Ç°½ÓÊÕ×Ö·û´®ÔÚ½ÓÊÕ»º´æÖĞµÄ¿ªÊ¼Î»ÖÃ
 extern char* string[SRTING_NUM];
 extern char UTCTime[7];		       //UTCÊ±¼ä£¬hhmmss¸ñÊ½
 extern char Longitude_Str[11];	 //¾­¶Èdddmm.mmmm(¶È·Ö)¸ñÊ½
-extern Time_Pack u2_time_Pack;		//Ê±¼ä
+extern Time_Pack u3_time_Pack;		//Ê±¼ä
 extern double Latitude_Temp,Baidu_Latitude_Temp;    //¼ÇÂ¼×ª»»µÄ¾­Î³¶È
 extern double Longitude_Temp,Baidu_Longitude_Temp;  //¼ÇÂ¼×ª»»µÄ¾­Î³¶È
 
