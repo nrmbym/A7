@@ -24,7 +24,6 @@ typedef struct
 
 extern char p1[300];
 extern char POSTDATA[1000];
-extern u8 failedTimes;     //上一次成功之后发送传输错误次数
 extern u8 Post_Errotimes;   //A7一次开机最大次数
 extern Data_Pack u2_data_Pack;  //A7相关结构体
 extern u8 isSendDataError;  //发送错误标志位

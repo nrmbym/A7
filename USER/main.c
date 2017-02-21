@@ -66,9 +66,9 @@ int main(void)
 //            if(isSendDataError==1)  //没有上传成功
 					if(key==4)
             {
-                failedTimes++;       //提交服务器失败次数
+                sysData_Pack.data.failedTimes++;       //提交服务器失败次数
                 Post_Errotimes++;
-                FLASH_GPS_Pack(failedTimes);    //未上传成功存放到FLASH中
+                FLASH_GPS_Pack(sysData_Pack.data.failedTimes);    //未上传成功存放到FLASH中
             }
         }
         if(Post_Errotimes>Post_Errotimes_MAX)

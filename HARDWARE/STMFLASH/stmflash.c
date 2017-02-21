@@ -139,6 +139,7 @@ void FLASH_initialize(void)  //开机初始化FLASH中数据
     {
         sysData_Pack.data.bootTimes = 1;                               //开机次数
         sysData_Pack.data.submitInformationErrorTimes = 0;             //上传服务器失败次数
+		sysData_Pack.data.failedTimes=0;                               //上一次成功发送后失败次数
         sysData_Pack.data.postErrorTimes = 0;                          //POST失败次数
         sysData_Pack.data.GPSErrorTimes = 0;                           //因为GPS未定位时间超时造成重启次数
         sysData_Pack.data.isEffective = 1;                             //记录FLASH中的数据是否有效

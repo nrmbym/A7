@@ -11,7 +11,7 @@
 #include "stmflash.h"
 
 u8 Post_Errotimes=0; //本次A7开机一共上传失败次数
-u8 failedTimes= 0;	 //上一次成功之后，失败次数，用于检测到一次成功发送之后，将之前未发送的数据发送上去
+
 u8 deviceState = 0;  //设备当前状态 0:开机 1:初始化AT指令 2:检查SIM卡 3:搜索信号 4:初始化GPRS态 5:正常工作态
 Data_Pack u2_data_Pack;  //A7相关信息
 
@@ -718,9 +718,9 @@ void A7_SendPost()  //发送并校验
         {
             isSendDataError = 0;//设置标志位为成功
             printf("收到正确应答\r\n");
-            if(failedTimes!=0)     //FLASH中存在未成功上传数据
+            if(sysData_Pack.data.failedTimes!=0)     //FLASH中存在未成功上传数据
             {
-                for(yl=1; yl<=failedTimes; yl++) //分failedTimes上传服务器
+                for(yl=1; yl<=sysData_Pack.data.failedTimes; yl++) //分failedTimes上传服务器
                 {
                     FLASH_GPS_Read(yl);     //读取FLASH未上传成功数据
                     if((ret = HTTP_POST(datatemp))==0)
@@ -728,7 +728,7 @@ void A7_SendPost()  //发送并校验
                     else
                         printf("发送失败\r\n");
                 }
-				         failedTimes=0;
+				         sysData_Pack.data.failedTimes=0;
             }
         }
         else

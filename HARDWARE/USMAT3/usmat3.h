@@ -23,6 +23,7 @@ __packed typedef struct     //__packedÔÚÕâÀï±íÊ¾ 1¡¢²»»á²åÈëÌî³äÒÔ¶ÔÆëÑ¹Ëõ¶ÔÏó ²
 {   //2¡¢Ê¹ÓÃÎ´¶ÔÆëµÄ·ÃÎÊ¶ÁÈ¡»òÐ´ÈëÑ¹ËõÀàÐÍµÄ¶ÔÏó¡£
     s32 bootTimes;						//¿ª»ú´ÎÊý
     s32 submitInformationErrorTimes;//ÉÏ´«·þÎñÆ÷Ê§°Ü´ÎÊý
+	u32 failedTimes;	           //ÉÏÒ»´Î³É¹¦Ö®ºó£¬Ê§°Ü´ÎÊý£¬ÓÃÓÚ¼ì²âµ½Ò»´Î³É¹¦·¢ËÍÖ®ºó£¬½«Ö®Ç°Î´·¢ËÍµÄÊý¾Ý·¢ËÍÉÏÈ¥
     s32 postErrorTimes;				//POSTÊ§°Ü´ÎÊý
     s32 GPSErrorTimes;				//ÒòÎªGPSÎ´¶¨Î»Ê±¼ä³¬Ê±Ôì³ÉµÄA7ÖØÆô´ÎÊý
     u32 CRCData;					    //CRCDataÖ®Ç°Êý¾ÝµÄCRCÐ£Ñé
