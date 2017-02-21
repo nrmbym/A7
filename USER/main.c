@@ -34,6 +34,7 @@ ld (Low Density ) 是小容量
 
 int main(void)
 {
+	  u8 key;
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); 	 //设置NVIC中断分组2:2位抢占优先级，2位响应优先级
     IWDG_Init(6,156);         //初始化看看门狗 溢出时间为1s
     delay_init();	    	      //延时函数初始化
@@ -53,6 +54,7 @@ int main(void)
 	
     while(1)
     {
+			key=KEY_Scan(0);
         if(GPS_Upload==1)   //GPS数据打包标志
         {
             GPS_Packed_Data();
@@ -61,7 +63,8 @@ int main(void)
         {
             submit_info_flag=0;
             A7_SendPost();          //数据上传服务器
-            if(isSendDataError==1)  //没有上传成功
+//            if(isSendDataError==1)  //没有上传成功
+					if(key==4)
             {
                 failedTimes++;       //提交服务器失败次数
                 Post_Errotimes++;
