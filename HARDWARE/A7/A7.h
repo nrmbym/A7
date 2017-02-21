@@ -53,7 +53,7 @@ extern void Restart_A7(void);   //硬件重启A7
 
 
 extern char * my_strstr(char *searchStr);   //搜索字符串函数
-extern char *Analytica1Data_GET(void);//geT解析函数
+//extern char *Analytica1Data_GET(void);//geT解析函数
 extern char * AnalyticalData(void);//解析函数
 extern char * ReturnCommaPosition(char *p ,u8 num);
 

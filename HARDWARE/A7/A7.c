@@ -527,7 +527,7 @@ char * AnalyticalData(void)
                 {
                     retHead=retTail-i+1;
                     * retTail=0;
-                    LCD_ShowString(50,150,200,16,16,(u8 *)retHead);		//显示一个字符串,12/16字体
+                    LCD_SString(10,100,300,200,12,u2_data_Pack.USART2_RX_BUF);		//显示一个字符串,12/16字体
                     return retHead;
                 }
             }
@@ -538,25 +538,25 @@ char * AnalyticalData(void)
     return 0;
 }
 
-char *Analytica1Data_GET(void)
-{
-    u16 i;
-    char * retHead = 0;
-    char * retTail = 0;
-    if((retTail=my_strstr("+CIPRCV:"))!=0)
-    {
-        for(i=0; *(retTail+i)!=NULL; i++)
-        {
-            if( *(retTail+i)==',' )
-            {
-                retHead=retTail+i+1;
-                * retTail=0;
-                return retHead;
-            }
-        }
-    }
-    return 0;
-}
+//char *Analytica1Data_GET(void)
+//{
+//    u16 i;
+//    char * retHead = 0;
+//    char * retTail = 0;
+//    if((retTail=my_strstr("+CIPRCV:"))!=0)
+//    {
+//        for(i=0; *(retTail+i)!=NULL; i++)
+//        {
+//            if( *(retTail+i)==',' )
+//            {
+//                retHead=retTail+i+1;
+//                * retTail=0;
+//                return retHead;
+//            }
+//        }
+//    }
+//    return 0;
+//}
 
 
 //提取字符串中的参数(两个参数或者三个参数)
@@ -701,6 +701,7 @@ void A7_GPS_Init(void)
 void A7_SendPost()  //发送并校验
 {
     s8 ret,yl;
+	LCD_Clear(WHITE);   //清屏
     if((ret = HTTP_POST(TEXT_Buffer))==0)
         printf("发送成功\r\n");
     else
@@ -710,9 +711,9 @@ void A7_SendPost()  //发送并校验
     {
         waitservice_flag=0;
         while(!(waitservice_flag ||(u2_data_Pack.USART2_RX_STA&(1<<15))));//等待服务器回应,如果大于
-        LCD_Clear(WHITE);
-        LCD_SString(10,10,300,200,12,u2_data_Pack.USART2_RX_BUF);
-        if(Analytica1Data_GET()!=0)
+        
+        
+        if(AnalyticalData()!=0)
         {
             isSendDataError = 0;//设置标志位为成功
             printf("收到正确应答\r\n");
