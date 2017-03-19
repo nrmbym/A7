@@ -57,7 +57,6 @@ extern double BaiduLatitude_Range[GPS_array];	     //纬度(百度坐标)
 extern u8 GPS_effective;                           //GPS数据是否有效位
 extern void getFilterLoc(double * Lat_filter,double * Lon);   //GPS数据滤波函数
 extern void GPS_Packed_Data(void);    //GPS数据打包上传函数
-extern void AGPS_Location(void);      //AGPS获取定位信息
 extern _sysData_Pack sysData_Pack;
 extern double distance;             //两次数据上传的距离间隔
 extern void Receive_empty(void);    //清空GPS缓存

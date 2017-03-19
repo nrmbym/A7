@@ -29,7 +29,7 @@ extern Data_Pack u2_data_Pack;  //A7相关结构体
 extern u8 isSendDataError;  //发送错误标志位
 extern u8 isSendData;     //通信标志位
 extern u8 deviceState;    //A7工作状态标志
-  
+
 
 extern s8 sendAT(char *sendStr,char *searchStr,u32 outTime);//发送AT指令函数
 extern s8 Check_TCP(void);    //检查当前连接状态

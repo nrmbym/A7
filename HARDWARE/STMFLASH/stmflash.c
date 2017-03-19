@@ -3,7 +3,7 @@
 #include "usart.h"
 #include "usmat3.h"
 
-char datatemp[165];            //用于暂时缓存FLASH中读出的数据
+char datatemp[164];            //用于暂时缓存FLASH中读出的数据
 char TEXT_Buffer[164];
 u8 signalQuality,old_signalQuality;     //信号强度,以后需要删除重新写
 
@@ -158,6 +158,10 @@ void FLASH_initialize(void)  //开机初始化FLASH中数据
 FLASH中 59K—63K存放GPS未上传成功的数据
 1K存放6个数据
 可以存放30个未成功上传的GPS数据
+
+因为测试问题
+先从65k开始存放数据
+65-69k存放未上传成功的FLASH数据
 *********************************************/
 void FLASH_GPS_Pack(u8 m)   //未上传成功的打包数据存放到FLASH中
 { 
@@ -165,33 +169,33 @@ void FLASH_GPS_Pack(u8 m)   //未上传成功的打包数据存放到FLASH中
 	 //大量数据没有上传成功
 	 //个别没有上传成功 定义一个i的全局变量。记录有几个未成功上传
 	 //每次关机时,把这个数据放入FLASH中,开机时方便读取上传
-    if((m+1)*Pack_length<=Pack_length*6)    //59k存放
-    {
+    if((m+1)*Pack_length<=Pack_length*6)    //59k存放    65
+    {                                      
         STMFLASH_Write(FLASH_SAVE_GPS+m*Pack_length,(u16*)TEXT_Buffer,sizeof(TEXT_Buffer)/2);    //写入GPS数据到FLASH
     }
-    else if(5<m&&m<=11)     //60k
+    else if(5<m&&m<=11)     //60k               66
     {
         STMFLASH_Write(FLASH_SAVE_GPS+1024+(m-6)*Pack_length,(u16*)TEXT_Buffer,sizeof(TEXT_Buffer)/2);
     }
-    else if(11<m&&m<=17)    //61
+    else if(11<m&&m<=17)    //61                 67
     {
         STMFLASH_Write(FLASH_SAVE_GPS+1024*2+(m-12)*Pack_length,(u16*)TEXT_Buffer,sizeof(TEXT_Buffer)/2);
     }
-    else if(11<m&&m<=17)    //62
+    else if(11<m&&m<=17)    //62               68
     {
         STMFLASH_Write(FLASH_SAVE_GPS+1024*3+(m-18)*Pack_length,(u16*)TEXT_Buffer,sizeof(TEXT_Buffer)/2);
     }
-    else                    //63
+    else                    //63                 69
     {
         STMFLASH_Write(FLASH_SAVE_GPS+1024*4+(m-24)*Pack_length,(u16*)TEXT_Buffer,sizeof(TEXT_Buffer)/2);
     }
 		
 		printf("未上传成功的GPS数据已保存FLASH\r\n\r\n");
-    m++;
-    if(m>=30)   //超过了最大的存储空间,从第一个开始重新存放
-    {
-        m=0;
-    }
+//    m++;
+//    if(m>=30)   //超过了最大的存储空间,从第一个开始重新存放
+//    {
+//        m=0;
+//    }
 }
 
 void FLASH_GPS_Read(s8 j)
@@ -200,37 +204,33 @@ void FLASH_GPS_Read(s8 j)
     {
         STMFLASH_Read(FLASH_SAVE_GPS+j*Pack_length,(u16*)datatemp,sizeof(TEXT_Buffer)/2);
         datatemp[Pack_length]='\0';
-        printf("%s\r\n",datatemp);
+    
     }
     else if(5<j&&j<=11)   //2
     {
         STMFLASH_Read(FLASH_SAVE_GPS+1024+(j-6)*Pack_length,(u16*)datatemp,sizeof(TEXT_Buffer)/2);
         datatemp[Pack_length]='\0';
-        printf("%s\r\n",datatemp);
+      
     }
     else if(11<j&&j<=17)    //3
     {
         STMFLASH_Read(FLASH_SAVE_GPS+1024*2+(j-12)*Pack_length,(u16*)datatemp,sizeof(TEXT_Buffer)/2);
         datatemp[Pack_length]='\0';
-        printf("%s\r\n",datatemp);
+  
     }
     else if(11<j&&j<=17)  //4
     {
         STMFLASH_Read(FLASH_SAVE_GPS+1024*3+(j-18)*Pack_length,(u16*)datatemp,sizeof(TEXT_Buffer)/2);
         datatemp[Pack_length]='\0';
-        printf("%s\r\n",datatemp);
+    
     }
     else          //5字节
     {
         STMFLASH_Read(FLASH_SAVE_GPS+1024*4+(j-24)*Pack_length,(u16*)datatemp,sizeof(TEXT_Buffer)/2);
         datatemp[Pack_length]='\0';
-        printf("%s\r\n",datatemp);
+      
     }
-    j++;
-    if(j>=30)   //超过了最大的存储空间,从第一个开始重新存放
-    {
-        j=0;
-    }
+
 }
 
 //对FLASH指定位置的擦除

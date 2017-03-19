@@ -5,7 +5,8 @@
 //59-63k ÓÃÀ´´æ·ÅÎ´ÉÏ´«³É¹¦µÄ´ò°üÊı¾İ
 //64K    ´æ·Å¿ª»ú´ÎÊı,´íÎóĞÅÏ¢´ÎÊı
 
-#define FLASH_SAVE_GPS     0X0800EC00       //´ÓµÚ59k¿ªÊ¼¡£ÓÃÓÚ´æ·ÅÎ´ÄÜ³É¹¦ÉÏ´«µÄGPSĞÅÏ¢£¬±ãÓÚÏÂÒ»´ÎÉÏ´«
+//#define FLASH_SAVE_GPS     0X0800EC00       //´ÓµÚ59k¿ªÊ¼¡£ÓÃÓÚ´æ·ÅÎ´ÄÜ³É¹¦ÉÏ´«µÄGPSĞÅÏ¢£¬±ãÓÚÏÂÒ»´ÎÉÏ´«
+#define FLASH_SAVE_GPS     0X08010800        //65k¿ªÊ¼´æ·Å
 #define FLASH_SAVE_GPS_DEV 0X0800EC00+164   //Ã¿´ÎÆ«ÒÆ¹Ì¶¨µÄµØÖ·ÓÃstrnlen()º¯Êı½øĞĞ¼ÆËã
 #define GPS_END            0X08010000       //63kµÄÆğÊ¼µØÖ·
 #define FLASH_Information  0X08010400       //64KÆğÊ¼µØÖ·
@@ -28,7 +29,7 @@ void STMFLASH_Read(u32 ReadAddr,u16 *pBuffer,u16 NumToRead);   		//´ÓÖ¸¶¨µØÖ·¿ªÊ
 //²âÊÔĞ´Èë
 void Test_Write(u32 WriteAddr,u16 WriteData);
 extern char TEXT_Buffer[164];               //»º´æ´ò°üÊı¾İ
-extern char datatemp[165];                  //»º´æ¶ÁÈ¡´ò°üÊı¾İ
+extern char datatemp[164];                  //»º´æ¶ÁÈ¡´ò°üÊı¾İ
 extern void FLASH_initialize(void);         //FLASHÖĞÊı¾İµÄ³õÊ¼»¯
 extern u8 signalQuality,old_signalQuality;
 extern void FLASH_GPS_Pack(u8 m);    //Î´ÉÏ´«³É¹¦µÄ´ò°üÊı¾İ´æ·Åµ½FLASHÖĞ

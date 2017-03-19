@@ -130,6 +130,7 @@ void A7_Init()
             u2_data_Pack.Operator[12] = '\0';//添加字符串结束符
             printf("检测信号成功 %s\r\n",u2_data_Pack.Operator);
         }
+		    GPRS_Connect();//GPRS连接态
         deviceState = 4;//初始化GPS态
         A7_GPS_Init();
         deviceState = 5;//正常工作态
@@ -451,7 +452,7 @@ s8 HTTP_POST(char * GPS_Info)
 
     u16 length;
     isSendData = 1;		//在和服务器通信的标志位
-
+		isSendDataError=0;   //错误位清零
     while((ret=Check_TCP())!=0)
     {
         i++;
@@ -459,7 +460,7 @@ s8 HTTP_POST(char * GPS_Info)
         if(i>10)
         {
             printf("TCP连接故障...准备重启\r\n");
-
+			A7_Init();//
         }
         delay_ms(50);
     }
@@ -491,7 +492,8 @@ Content-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n\r\n%s\
             ret= -1;
         }
 
-    } else
+    } 
+		else
     {
         sendAT((char*)0X1B,0,0);	//ESC,取消发送
         isSendDataError = 1;//设置标志位为失败
@@ -528,7 +530,7 @@ char * AnalyticalData(void)
                     retHead=retTail-i+1;
                     * retTail=0;
 					delay_ms(20);
-                    LCD_SString(10,100,300,200,12,u2_data_Pack.USART2_RX_BUF);		//显示一个字符串,12/16字体
+                    LCD_SString(10,100,300,200,12,(u8 *)retHead);		//显示一个字符串,12/16字体
                     return retHead;
                 }
             }
@@ -677,22 +679,38 @@ u8 charNum(char *p ,char Char)
 }
 
 //硬件重启A7
+//PB1 --pwr_key   PB2--RST
 void Restart_A7(void)
-{
+{ 
+	GPIO_InitTypeDef GPIO_InitStructure;
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);
+	GPIO_InitStructure.GPIO_Pin=GPIO_Pin_1|GPIO_Pin_2;
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB,&GPIO_InitStructure);
+	PBout(1)=0;//PB1给高，PBR给低，确保模块关机
+	PBout(2)=1;//PB2给高，rst给低，开始复位
+	delay_ms(1000);
+	PBout(2)=0; //PB2给低，RST拉高
+	delay_ms(50);
+	PBout(1)=1; //将pwr拉高2秒以上
+	delay_ms(3000);
+		//开机完成
+	PBout(1)=0;//PB1给高，rwr给低，完成开机
 }
 
 //初始化A7GPS
 void A7_GPS_Init(void)
 {
 	u8 i=0;
-    while(sendAT("AT+GPS=1","OK",5000)!=0)
+  while(sendAT("AT+AGPS=1","OK",15000)!=0)
 	{
        i++;
-		printf("GPS开启失败次数...%c\r\n",i);
+		printf("AGPS开启失败次数...%d\r\n",i);
 		if(i>20)
 			A7_Init();//重启A7
 	}
-	printf("GPS打开成功\r\n");
+	printf("AGPS打开成功\r\n");
 }
 
 
@@ -702,7 +720,7 @@ void A7_GPS_Init(void)
 void A7_SendPost()  //发送并校验
 {
     s8 ret,yl;
-	LCD_Clear(WHITE);   //清屏
+	  LCD_Clear(WHITE);   //清屏
     if((ret = HTTP_POST(TEXT_Buffer))==0)
         printf("发送成功\r\n");
     else
@@ -722,7 +740,7 @@ void A7_SendPost()  //发送并校验
             {
                 for(yl=1; yl<=sysData_Pack.data.failedTimes; yl++) //分failedTimes上传服务器
                 {
-                    FLASH_GPS_Read(yl);     //读取FLASH未上传成功数据
+                    FLASH_GPS_Read(yl-1);     //读取FLASH未上传成功数据
                     if((ret = HTTP_POST(datatemp))==0)
                         printf("发送成功\r\n");
                     else
@@ -733,7 +751,7 @@ void A7_SendPost()  //发送并校验
         }
         else
         {
-            isSendDataError = 1;
+            isSendDataError = 1;                  //isSendDataError变量有问题
             printf("未收到正确应答\r\n");
         }
     }

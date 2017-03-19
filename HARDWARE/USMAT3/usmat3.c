@@ -10,30 +10,29 @@
 #include "A7.h"
 
 
-
 Time_Pack u3_time_Pack;		   //时间
-u8 USART3_RX_BUF[USART3_MAX_RECV_LEN];
+u8 USART3_RX_BUF[USART3_MAX_RECV_LEN];  //串口接收数组缓存
 u16 receive_len=0;
 vu16 USART2_RX_STA=0;
 u32 startNum = 0;       //记录当前接收字符串在接收缓存中的开始位置
 u8  stringNum=0;				//本次接收到的字符串条数
 char *GPRMC;		        //储存接收到的推荐GPS定位数据
 char* string[SRTING_NUM];
-char UTCTime[7];       //存放UTC时间数据 时分秒
-char UTCTime_year[7];  //存放年月日时间
-char Longitude_Str[11];	//经度dddmm.mmmm(度分)格式
+char UTCTime[7];          //存放UTC时间数据 时分秒
+char UTCTime_year[7];     //存放年月日时间
+char Longitude_Str[11];	  //经度dddmm.mmmm(度分)格式
 char Latitude_Str[10];	  //纬度ddmm.mmmm(度分)格式
-double Latitude_Temp = 0,Baidu_Latitude_Temp = 0;   //记录转换的经纬度
+double Latitude_Temp = 0,Baidu_Latitude_Temp = 0;     //记录转换的经纬度
 double Longitude_Temp = 0,Baidu_Longitude_Temp = 0;   //记录转换的经纬度
-double BaiduLongitude_Range[GPS_array];     //经度(百度坐标)
+double BaiduLongitude_Range[GPS_array];      //经度(百度坐标)
 double BaiduLatitude_Range[GPS_array];	     //纬度(百度坐标)
 u8 GPS_array_Count=0;
-u8 GPS_effective=0;                         //GPS数据是否有效位
-static u8 count=0;   //GPS接收次数
+u8 GPS_effective=0;               //GPS数据是否有效位
+static u8 count=0;                //GPS接收次数
 char *GPSState="LAST GPS  K";
-_sysData_Pack sysData_Pack;	//保存在Flash中的相关数据的数据结构
-u8 Pack_length=0;         //两次数据打包长度
-double distance=0;        //两次定位的距离
+_sysData_Pack sysData_Pack;	      //保存在Flash中的相关数据的数据结构
+u8 Pack_length=0;                 //两次数据打包长度
+double distance=0;                //两次定位的距离
 
 
 //初始化IO 串口3
@@ -84,6 +83,7 @@ void USART3_Init(u32 bound)
     NVIC_Init(&NVIC_InitStructure);	//根据指定的参数初始化VIC寄存器
 }
 
+
 //GPS数据缓存接收清空
 void Receive_empty(void)
 {
@@ -97,7 +97,7 @@ void Receive_empty(void)
     }
 }
 
-
+//UTC时间转本地时间
 void UTC_Localtime(void)
 {
     //UTC小时加8h转为北京时间
@@ -169,8 +169,8 @@ void UTC_Localtime(void)
             (u3_time_Pack.day>31&&u3_time_Pack.day<1)||
             u3_time_Pack.hour>24||
             u3_time_Pack.minute>60||
-            u3_time_Pack.second>60)     //转化的时间出现错误
-    {
+            u3_time_Pack.second>60)          //转化的时间出现错误
+    {                                        //重新清0
         u3_time_Pack.year=0;
         u3_time_Pack.month=0;
         u3_time_Pack.day=0;
@@ -182,17 +182,13 @@ void UTC_Localtime(void)
 }
 
 
-//蜂窝网络进行AGPS定位
-void  AGPS_Location(void)
-{
-
-}
 
 //推荐定位信息的GPS数据的解析
 //$GPRMC,000021.262,V,,,,,0.00,0.00,060180,,,N*47
 //格式:$GPRMC,<1>,<2>,<3>,<4>,<5>,<6>,<7>,<8>,<9>,<10>,<11>,<12>*<13><CR><LF>
 void analysisGPS(void)
 {
+	static u8 GPS_failed_times=0;  //GPS定位失败次数，大于10次就打开AGPS
     u32 i=0;           //for循环变量
     u32 commaNum = 0;  //逗号个数
     u32 lenth=0;       //数据的长度
@@ -219,10 +215,11 @@ void analysisGPS(void)
 
         if(recCheckSum==checksum)
         {
-            printf("数据校验成功\r\n");
+//            printf("数据校验成功\r\n");
             str = ReturnCommaPosition(GPRMC,2);   //查找定位状态，A=定位，V=未定位
             if(*(str+1)=='A')              //有效定位
             {
+				
                 printf("A定位有效\r\n");
                 //进行各数据的提取
                 str = ReturnCommaPosition(GPRMC,1);  //hhmmss（时分秒) 时间的提取
@@ -308,12 +305,24 @@ void analysisGPS(void)
 //                       u3_time_Pack.second);
 
                 GPS_effective=1;                  //标记获取的GPS数据有效
+//				sendAT("AT+AGPS=0","OK",5000);
+//				if(sendAT("AT+GPS=1","OK",2000)!=0)
+//				{
+//					printf("打开GPS失败\r\n");
+//				}
+//				else
+//					printf("打开GPS成功\r\n");
+//				GPS_failed_times=0;
+				
             }
             else  //GPS定位信息无效
             {
+//				GPS_failed_times++;
+//				if(GPS_failed_times>10)
+//				{
+//					A7_GPS_Init();//打开AGPS
+//				}
                 printf("GPS未成功定位\r\n");
-//                printf("启用AGPS蜂窝数据进行定位\r\n");
-//                AGPS_Location();      //进行AGPS定位
                 //1.要不要重新填满数组
                 //2.是否等待几次GPS未定位成功才进入AGPS定位
 //                first_time=0;  //重新填充数组
@@ -384,7 +393,7 @@ void GPS_Packed_Data(void)   //GPS数据打包上传
                 u3_time_Pack.year,u3_time_Pack.month,u3_time_Pack.day,
                 u3_time_Pack.hour,u3_time_Pack.minute,u3_time_Pack.second);
         //GPS数据上传  (两次的GPS数据上传)
-        Pack_length=sprintf(TEXT_Buffer,"Lo=%.6lf&La=%.6lf&Time=%s&Log=%s,%d,%d,%d,%d,sQ: %d&&Lo=%.6lf&La=%.6lf&Time=%s&Log=%s,%d,%d,%d,%d,sQ: %d",   //一次数据打包
+        Pack_length=sprintf(TEXT_Buffer,"Lo=%.6lf-La=%.6lf-Time=%s-Log=%s,%d,%d,%d,%d,sQ: %d--Lo=%.6lf-La=%.6lf-Time=%s-Log=%s,%d,%d,%d,%d,sQ: %d",   //一次数据打包
                             LonOld,
                             LatOld,
                             u3_time_Pack.Time_Old,

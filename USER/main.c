@@ -25,6 +25,9 @@
 hd(High Density )是大容量，
 md(Medium Density ) 是中容量
 ld (Low Density ) 是小容量
+
+
+基本功能实现
 ****************************************************/
 
 
@@ -34,7 +37,7 @@ ld (Low Density ) 是小容量
 
 int main(void)
 {
-	  u8 key;
+    u8 key;
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); 	 //设置NVIC中断分组2:2位抢占优先级，2位响应优先级
     IWDG_Init(6,156);         //初始化看看门狗 溢出时间为1s
     delay_init();	    	      //延时函数初始化
@@ -54,34 +57,38 @@ int main(void)
 	
     while(1)
     {
-			key=KEY_Scan(0);
+        key=KEY_Scan(1);
         if(GPS_Upload==1)   //GPS数据打包标志
         {
             GPS_Packed_Data();
         }
+				
         if((submit_info_flag==1)&&(GPS_PACK==1))  //当距离上一次发送的定时到了，并且已经是打包完成，才进行发送
         {
             submit_info_flag=0;
             A7_SendPost();          //数据上传服务器
-//            if(isSendDataError==1)  //没有上传成功
-					if(key==4)
+//          if(isSendDataError==1)  //没有上传成功   
+					  if(key==WKUP_PRES)    
             {
                 sysData_Pack.data.failedTimes++;       //提交服务器失败次数
                 Post_Errotimes++;
-                FLASH_GPS_Pack(sysData_Pack.data.failedTimes);    //未上传成功存放到FLASH中
+                FLASH_GPS_Pack(sysData_Pack.data.failedTimes-1);    //未上传成功存放到FLASH中
             }
         }
-        if(Post_Errotimes>Post_Errotimes_MAX)
+				
+        if(Post_Errotimes>Post_Errotimes_MAX)  //当前上传服务器失败次数过多
         {
             A7_Init();
         }
+				
         if(Heartbeat_Upload==1)  //上传心跳
         {
             //这里缺少上传心跳函数
             //上传成功 Upload_Time=0; 才清0
             Heartbeat_Upload=0;   //标志位清0
         }
-        if(LEDshine_flag ==1 )
+				
+        if(LEDshine_flag ==1 )  //主循环运行提示灯
         {
             LEDshine_flag=0;
             LED1=~LED1;

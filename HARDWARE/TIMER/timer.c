@@ -14,7 +14,7 @@ u32 Heartbeat_Upload=0;  //心跳上传标志位
 u8 submit_info_flag=0;   //发送GPS标志位、、
 u8 GPS_PACK=0;           //两次打包完成标志位
 u8 waitservice_flag=0;   //等待服务器超时标志
-u8 LEDshine_flag=0;     
+u8 LEDshine_flag=0;
 //通用定时器3中断初始化
 //这里时钟选择为APB1的2倍，而APB1为36M
 //arr：自动重装值。
@@ -57,7 +57,7 @@ void TIM3_IRQHandler(void)
     if(TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET)    //是更新中断
     {
         TIM_ClearITPendingBit(TIM3,TIM_IT_Update);  //清除TIMx更新中断标志
-        times++;
+     
 
         if(Error==0)   //没有出错
         {
@@ -75,11 +75,13 @@ void TIM3_IRQHandler(void)
             break;
         case 5:    //正常工作状态 gps打开
         {
-			if(times%10== 0)  //每一秒闪一次灯
-			{
-				LEDshine_flag=1;
-			}
-            if(submit_info_flag==0)
+					  times++; //用于计时间
+            if(times%10== 0)  //每一秒闪一次灯
+            {
+                LEDshine_flag=1;
+            }
+						
+            if(submit_info_flag==0)     //优化，距离上次上传的时间的间隔
             {
                 tt++;
                 if(tt%300==0)   //每30秒上传一次
@@ -88,12 +90,12 @@ void TIM3_IRQHandler(void)
                 }
             }
 
-            if(times%100==0)       //每正常工作1s
+            if(times%10==0)       //每正常工作1s
             {
                 if(GPS_effective==1)    //GPS数据有效
                 {
                     GPS_effective=0;    //GPS数据标记为无效
-                    if(times%15==0)     //每15s输出一次滤波信息
+                    if(times%150==0)     //每15s输出一次滤波信息
                     {
                         //只有前后两次的距离超过40m才保证打包数据
                         getFilterLoc(&LatNow, &LonNow);   //得到滤波后的经纬度  把两个存储变量的地址传入，赋给一个指针变量
@@ -123,7 +125,6 @@ void TIM3_IRQHandler(void)
 //										{
 //												//只有在有GPS时转到AGPS时才进入
 //												printf("启动AGPS数据网络定位\r\n\r\n");
-//												AGPS_Location();
 
 //										}
 //										if(GPS_invalidtimes>=GPSFailedTime_MAX)  //超过5分钟没有定位成功
@@ -165,26 +166,8 @@ void TIM3_IRQHandler(void)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //定时器7中断服务程序
+//用于串口2接收判断
 void TIM7_IRQHandler(void)
 {
     if (TIM_GetITStatus(TIM7, TIM_IT_Update) != RESET)//是更新中断
